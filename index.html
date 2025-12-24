@@ -65,7 +65,9 @@
     </div>
     
     <canvas id="gameCanvas"></canvas>
-    <h1 class="shadow-name">MADE BY SHADOW</h1>
+
+    <!-- 🔥 NAME CHANGED HERE -->
+    <h1 class="shadow-name">MADE BY PRATEEK</h1>
 
     <script>
         const canvas = document.getElementById("gameCanvas");
@@ -158,14 +160,12 @@
             if (!gameActive) return;
             ctx.clearRect(0,0, canvas.width, canvas.height);
 
-            // Draw Blue Player
             ctx.shadowBlur = 10;
             ctx.shadowColor = "#00f2fe";
             ctx.fillStyle = "#00f2fe";
             ctx.fillRect(player.x, player.y, player.size, player.size);
             ctx.shadowBlur = 0;
 
-            // DRAW CROWN IF SCORE > 100
             if (score >= 100) drawCrown(player.x, player.y, player.size);
 
             if (!isBlackBreak) {
