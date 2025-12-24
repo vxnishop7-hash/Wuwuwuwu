@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <style>
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            background: #000; color: white; font-family: 'Arial Black', sans-serif; 
+            overflow: hidden; display: flex; flex-direction: column; align-items: center;
+        }
+
+        #menu {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+            z-index: 100; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+        }
+
+        .start-btn {
+            background: #00f2fe; color: black; border: none;
+            padding: 15px 40px; font-size: 22px; font-weight: bold;
+            border-radius: 50px; cursor: pointer; box-shadow: 0 0 20px #00f2fe;
+        }
+
+        #ui-layer {
+            width: 90%; margin-top: 15px; display: flex; 
+            justify-content: space-between; align-items: center;
+        }
+
+        #score-display { font-size: 24px; color: #ffcc00; }
+        
+        #gameCanvas {
+            background: #050505; border: 3px solid #333;
+            margin-top: 5px; touch-action: none;
+            width: 90vw; height: 55vh; transition: 0.5s;
+        }
+
+        #title-display { font-size: 20px; font-weight: bold; margin-top: 10px; height: 35px; }
+
+        .shadow-name {
+            font-size: 28px; font-weight: 900; letter-spacing: 5px;
+            color: #fff; text-shadow: 0 0 15px #00f2fe; margin-top: 15px;
+            text-transform: uppercase;
+        }
+
+        @keyframes systemGlitch {
+            0% { background-color: #000; }
+            50% { background-color: #003300; }
+            100% { background-color: #000; }
+        }
+        .glitch-active { animation: systemGlitch 0.1s infinite; border-color: #00ff00 !important; }
+    </style>
+</head>
+<body>
+
+    <div id="menu">
+        <h1 style="color:#00f2fe; letter-spacing: 5px;">NEON DASH</h1>
+        <p style="color:#fff">CAN YOU REACH THE SHADOW RANK?</p>
+        <p style="font-size: 12px; color: #ffcc00;">REACH 300 FOR THE SECRET... 😈</p>
+        <button class="start-btn" onclick="startGame()">START MISSION</button>
+    </div>
+
+    <div id="ui-layer">
+        <div id="score-display">SCORE: <span id="score-val">0</span></div>
+        <div id="title-display">EASY 😏</div>
+    </div>
+    
+    <canvas id="gameCanvas"></canvas>
+    <h1 class="shadow-name">MADE BY SHADOW</h1>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const titleText = document.getElementById("title-display");
+        
+        canvas.width = 400; canvas.height = 500;
+        let score = 0;
+        let gameActive = false;
+        let isHackerMode = false;
+        let isBlackBreak = false;
+        let wallY = -250;
+        let player = { x: 175, y: 430, size: 50 }; 
+        let items = [];
+
+        function startGame() {
+            document.getElementById("menu").style.display = "none";
+            canvas.classList.remove("glitch-active");
+            score = 0;
+            items = [];
+            isHackerMode = false;
+            isBlackBreak = false;
+            wallY = -250;
+            document.getElementById("score-val").innerText = score;
+            updateRank();
+            gameActive = true;
+            loop();
+        }
+
+        function move(e) {
+            let clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            let rect = canvas.getBoundingClientRect();
+            let scaleX = canvas.width / rect.width;
+            player.x = (clientX - rect.left) * scaleX - player.size / 2;
+            if(player.x < 0) player.x = 0;
+            if(player.x > canvas.width - player.size) player.x = canvas.width - player.size;
+        }
+
+        window.addEventListener("mousemove", move);
+        window.addEventListener("touchmove", move);
+
+        function updateRank() {
+            if (score >= 300) {
+                if(!isHackerMode) triggerHacker();
+            } else if (score >= 150) { 
+                titleText.innerHTML = "IMPOSSIBLE 🌌👹"; titleText.style.color = "#ff0000"; 
+            } else if (score >= 120) { 
+                titleText.innerHTML = "MASTER 🏆🔥"; titleText.style.color = "#ff007f"; 
+            } else if (score >= 100) { 
+                titleText.innerHTML = "SHADOW KING 💀☠️"; titleText.style.color = "#ffcc00"; 
+            } else if (score >= 40) { 
+                titleText.innerHTML = "PRO 😎⚡"; titleText.style.color = "#00f2fe"; 
+            } else { 
+                titleText.innerHTML = "EASY 😏"; titleText.style.color = "#fff";
+            }
+        }
+
+        function drawCrown(x, y, size) {
+            ctx.fillStyle = "#ffcc00";
+            ctx.beginPath();
+            ctx.moveTo(x + 5, y);
+            ctx.lineTo(x + 5, y - 15);
+            ctx.lineTo(x + size/4 + 5, y - 5);
+            ctx.lineTo(x + size/2, y - 20);
+            ctx.lineTo(x + (3*size/4) - 5, y - 5);
+            ctx.lineTo(x + size - 5, y - 15);
+            ctx.lineTo(x + size - 5, y);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function triggerHacker() {
+            isHackerMode = true;
+            isBlackBreak = true;
+            items = [];
+            titleText.innerHTML = "HACKER 🖥️🛑";
+            titleText.style.color = "#00ff00";
+            
+            setTimeout(() => {
+                alert("HaHaHa....");
+                alert("How you find this level?");
+                alert("You have cheat.");
+                alert("No more points for you.");
+                isBlackBreak = false;
+                canvas.classList.add("glitch-active");
+            }, 500);
+        }
+
+        function loop() {
+            if (!gameActive) return;
+            ctx.clearRect(0,0, canvas.width, canvas.height);
+
+            // Draw Blue Player
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "#00f2fe";
+            ctx.fillStyle = "#00f2fe";
+            ctx.fillRect(player.x, player.y, player.size, player.size);
+            ctx.shadowBlur = 0;
+
+            // DRAW CROWN IF SCORE > 100
+            if (score >= 100) drawCrown(player.x, player.y, player.size);
+
+            if (!isBlackBreak) {
+                if (!isHackerMode) {
+                    let spawnRate = 0.05 + (score / 1200);
+                    if (Math.random() < spawnRate) {
+                        items.push({
+                            x: Math.random() * (canvas.width - 28),
+                            y: -30,
+                            size: 28,
+                            type: Math.random() < 0.7 ? "gold" : "red",
+                            speed: 4 + (score / 14)
+                        });
+                    }
+
+                    for (let i = items.length - 1; i >= 0; i--) {
+                        let it = items[i];
+                        it.y += it.speed;
+                        ctx.fillStyle = it.type === "gold" ? "#ffcc00" : "#ff0000";
+                        ctx.fillRect(it.x, it.y, it.size, it.size);
+
+                        if (it.x < player.x + player.size && it.x + it.size > player.x &&
+                            it.y < player.y + player.size && it.y + it.size > player.y) {
+                            
+                            if (it.type === "gold") {
+                                score++;
+                                document.getElementById("score-val").innerText = score;
+                                updateRank();
+                                items.splice(i, 1);
+                            } else {
+                                gameActive = false;
+                                alert("GAME OVER!\nRANK: " + titleText.innerText + "\nSCORE: " + score);
+                                document.getElementById("menu").style.display = "flex";
+                            }
+                        }
+                        if (it.y > canvas.height) items.splice(i, 1);
+                    }
+                } else {
+                    wallY += 0.4;
+                    ctx.fillStyle = "#ff0000";
+                    ctx.fillRect(0, wallY, canvas.width, 300);
+
+                    if (player.y < wallY + 300) {
+                        gameActive = false;
+                        alert("CHEATER DETECTED. SYSTEM SHUTDOWN.");
+                        location.reload();
+                    }
+                }
+            }
+            requestAnimationFrame(loop);
+        }
+    </script>
+</body>
+</html>
